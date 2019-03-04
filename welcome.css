@@ -1,0 +1,129 @@
+/* Global block*/
+/* Tar bort allt extra mellanrum och ändrar bakgrund.*/
+body {
+    padding: 0;
+    margin: 0;
+    background-color: cornflowerblue;
+    overflow: hidden;
+
+}
+
+/* Sätter totala storleken och placerar den korrekt. */
+#welcome {
+    position: relative;
+    width: 600px;
+    height: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 100px;
+}
+
+/* Sätter standard för alla inputfält på welcome-sidan. */
+#welcome input {
+    margin: 0;
+    padding: 0;
+    width: 150px;
+    height: 15px;
+    float: right;
+}
+
+/* Sätter standard för alla labels på welcome-sidan. */
+#welcome label {
+    display: inline-block; /* Behåller label på samma rad som inputfältet. */
+    margin: 0 0 5px 1px;
+    padding: 0;
+    width: 90px;
+    text-align: left;
+
+}
+
+/* Logo and Slogan block */
+/* I fall att det finns standard margin eller padding för bilder nollställs det här. */
+.img {
+    margin: 0;
+    padding: 0;
+}
+
+/* Sätter egenskaperna hos bilden enligt intruktionerna. */
+.logo {
+    margin: 0;
+    padding: 0;
+    width: 340px;
+    height: 400px;
+    border: #222222 1px solid;
+
+}
+
+/* Login block*/
+.login {
+    position: absolute; /* Gör så att koordinaterna blir innuti dess förälder "welcome" ovan */
+    left: 350px;
+    top: 0;
+    background-color: whitesmoke;
+    width: 250px;
+    height: 90px;
+    padding: 0;
+    margin: 0;
+    border: #222222 1px solid;
+
+}
+
+/* Allt innehåll i loginrutan */
+.login form {
+    margin: 15px 2px 0 0; /* Top Right Bottom Left */
+    float: right;
+}
+
+/* Sätter login knappen enligt intruktionerna. */
+login-button {
+    display: block; /* För att få den till en egen rad. */
+    padding: 0;
+    margin: 5px;
+    width: 50px;
+    float: right;
+}
+
+/*Signup block*/
+.signup {
+    position: absolute; /* Gör så att koordinaterna blir innuti dess förälder "welcome" ovan */
+    left: 350px;
+    top: 100px;
+    background-color: whitesmoke;
+    width: 250px;
+    height: 300px;
+    padding: 0;
+    margin: 0;
+    border: #222222 1px solid;
+
+}
+
+/* Centrerar "Sign Up Here" */
+.signup h2 {
+    text-align: center;
+}
+
+/* Dropdown menyn till att välja kön */
+.gender {
+    margin: 0;
+    padding: 0;
+    width: 154px;
+    height: 20px;
+    float: right;
+}
+
+/* Allt innehåll i sign up rutan. */
+.signup form {
+    float: right;
+    margin: 0 2px 0 0; /* Top Right Bottom Left */
+    padding: 0;
+}
+
+/* Sätter sign up knappen enligt intruktionerna. */
+.signup-button {
+    display: block;
+    padding: 0;
+    margin: 5px;
+    width: 60px;
+    height: 20px;
+    float: right;
+}
