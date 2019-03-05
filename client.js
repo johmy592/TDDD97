@@ -32,7 +32,7 @@ displayView = function () {
         document.getElementById("browse_user").addEventListener('submit', browseUser);
         document.getElementById('send_browse_msg').addEventListener('click',
             function () {
-                sendMessage('browse_message', 'user_email', 'browse_message_wall')
+                sendMessage('browse_message_box', 'user_email', 'browse_message_wall')
             });
         document.getElementById('reload_browse_wall_btn').addEventListener('click',
             function () {
@@ -94,15 +94,15 @@ showTab = function (evt, tab) {
 getUserData = function () {
     var token = localStorage.getItem('token');
     var serverResponse = serverstub.getUserDataByToken(token).data;
+    var email = serverResponse.email;
     var name = serverResponse.firstname;
     var family_name = serverResponse.familyname;
-    var email = serverResponse.email;
     var gender = serverResponse.gender;
     var city = serverResponse.city;
     var country = serverResponse.country;
 
-    document.getElementById('name_info').innerText = name + " " + family_name;
     document.getElementById('email_info').innerText = email;
+    document.getElementById('name_info').innerText = name + " " + family_name;
     document.getElementById('gender_info').innerText = gender;
     document.getElementById('city_info').innerText = city;
     document.getElementById('country_info').innerText = country;
@@ -130,7 +130,7 @@ updateWall = function (msg_wall) {
         var email = document.getElementById('user_email').innerText;
         messages = serverstub.getUserMessagesByEmail(token, email).data;
     }
-    console.log(messages);
+
     document.getElementById(msg_wall).innerHTML = "";
     var i;
     for (i = 0; i < messages.length; i++) {
@@ -145,7 +145,9 @@ updateWall = function (msg_wall) {
 
 browseUser = function (event) {
     event.preventDefault();
+    // Reset error message if any exists
     document.getElementById('user_not_found').innerText = "";
+
     var token = localStorage.getItem('token');
     var browse_email = document.getElementById('search_email').value;
     var serverResponse = serverstub.getUserDataByEmail(token, browse_email);
@@ -162,6 +164,8 @@ browseUser = function (event) {
         document.getElementById('user_gender').innerText = gender;
         document.getElementById('user_city').innerText = city;
         document.getElementById('user_country').innerText = country;
+
+        // Update message wall, then display the correct user profile
         updateWall('browse_message_wall');
         document.getElementById('user_profile').style.display = "block";
     } else {
@@ -185,8 +189,7 @@ changePassword = function (event) {
     var new_password = document.getElementById("new_password").value;
     var serverResponse = serverstub.changePassword(localStorage.getItem("token"), old_password, new_password);
     document.getElementById("new_pwd_feedback").innerHTML = serverResponse.message;
-    if (!serverResponse.success) {
-    } else {
+    if (serverResponse.success) {
         document.getElementById('old_password').value = '';
         document.getElementById('new_password').value = '';
         document.getElementById('confirm_new_pw').value = '';
@@ -253,9 +256,9 @@ registerUser = function (event) {
         city: city.value,
         country: country.value
     };
-    var returnedObject = serverstub.signUp(dataObject);
-    if (!returnedObject.success) {
-        email.setCustomValidity(returnedObject.message);
+    var serverResponse = serverstub.signUp(dataObject);
+    if (!serverResponse.success) {
+        email.setCustomValidity(serverResponse.message);
     } else {
         email.setCustomValidity('');
         var signInResponse = serverstub.signIn(dataObject.email, dataObject.password);

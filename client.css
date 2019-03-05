@@ -115,7 +115,7 @@ body {
     margin-left: auto;
     margin-right: auto;
     margin-top: 10px;
-    width: 68%;
+    width: 70%;
     height: 100%;
     background-color: ghostwhite;
 }
@@ -125,7 +125,7 @@ body {
     background-color: lightgray;
 }
 
-.tabs button {
+.tab_button {
     background-color: darkgray;
     float: left;
     outline: 0;
