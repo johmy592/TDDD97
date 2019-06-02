@@ -1,0 +1,282 @@
+/* Global block*/
+/* Tar bort allt extra mellanrum och ändrar bakgrund.*/
+body {
+    padding: 0;
+    margin: 0;
+    background-color: cornflowerblue;
+    overflow: hidden;
+
+}
+
+/* Sätter totala storleken och placerar den korrekt. */
+#welcome {
+    position: relative;
+    width: 600px;
+    height: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 100px;
+}
+
+/* Sätter standard för alla inputfält på welcome-sidan. */
+#welcome input {
+    margin: 0;
+    padding: 0;
+    width: 150px;
+    height: 17px;
+    float: right;
+}
+
+/* Sätter standard för alla labels på welcome-sidan. */
+#welcome label {
+    display: inline-block; /* Behåller label på samma rad som inputfältet. */
+    margin: 0 0 5px 1px;
+    padding: 0;
+    width: 90px;
+    text-align: left;
+
+}
+
+/* Logo and Slogan block */
+/* I fall att det finns standard margin eller padding för bilder nollställs det här. */
+.img {
+    margin: 0;
+    padding: 0;
+}
+
+/* Sätter egenskaperna hos bilden enligt intruktionerna. */
+.logo {
+    margin: 0;
+    padding: 0;
+    width: 340px;
+    height: 400px;
+    border: #222222 1px solid;
+
+}
+
+/* Login block*/
+.login {
+    position: absolute; /* Gör så att koordinaterna blir innuti dess förälder "welcome" ovan */
+    left: 350px;
+    top: 0;
+    background-color: whitesmoke;
+    width: 250px;
+    height: 90px;
+    padding: 0;
+    margin: 0;
+    border: #222222 1px solid;
+
+}
+
+/* Allt innehåll i loginrutan */
+.login form {
+    margin: 15px 2px 0 0; /* Top Right Bottom Left */
+    float: right;
+}
+
+/* Sätter login knappen enligt intruktionerna. */
+.login-button {
+    display: block; /* För att få den till en egen rad. */
+    padding: 0;
+    margin: 5px;
+    width: 50px;
+    float: right;
+}
+
+#badLogin {
+    color: red;
+    font-size: 12px;
+    margin-left: 30px;
+}
+
+/*Signup block*/
+.signup {
+    position: absolute; /* Gör så att koordinaterna blir innuti dess förälder "welcome" ovan */
+    left: 350px;
+    top: 100px;
+    background-color: whitesmoke;
+    width: 250px;
+    height: 300px;
+    padding: 0;
+    margin: 0;
+    border: #222222 1px solid;
+
+}
+
+/* Centrerar "Sign Up Here" */
+.signup h2 {
+    text-align: center;
+}
+
+/* Dropdown menyn till att välja kön */
+#gender {
+    margin: 0;
+    padding: 0;
+    width: 150px;
+    height: 20px;
+    float: right;
+}
+
+/* Allt innehåll i sign up rutan. */
+.signup form {
+    float: right;
+    margin: 0 2px 0 0; /* Top Right Bottom Left */
+    padding: 0;
+}
+
+/* Sätter sign up knappen enligt intruktionerna. */
+.signup-button {
+    display: block;
+    padding: 0;
+    margin: 5px;
+    width: 60px;
+    height: 20px;
+    float: right;
+}
+
+/* Tab block */
+
+.profile {
+    position: relative;
+    width: 60%;
+    height: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    /*margin-top: 100px;*/
+    background-color: ghostwhite;
+}
+
+.tabs {
+    overflow: hidden;
+    background-color: lightgray;
+    font-weight: bold;
+}
+
+.tabs button {
+    background-color: inherit;
+    float: left;
+    outline: 0;
+    padding: 10px 16px;
+    border: 0;
+    outline: 0;
+}
+
+.tabs button.active {
+    background-color: darkgray;
+}
+
+.tab_content {
+    display: none;
+    margin: 0 1% 1% 1%;
+}
+
+/* Start page block */
+
+.personal_info {
+    width: 50%;
+    float: left;
+    font-size: larger;
+}
+
+.personal_info label {
+    display: inline-block;
+    float: left;
+    margin-right: 5px;
+    font-weight: bold;
+}
+
+.info_text {
+    margin: 3px;
+}
+
+.msg_form {
+    width: 50%;
+    height: 10%;
+    background-color: red;
+    float: right;
+    text-align: left;
+    margin: 0;
+}
+
+/*#msg_form{
+    height: 100%;
+    width: 100%
+}*/
+
+.text_box {
+    margin: 0;
+    outline: 0;
+    width: 85%;
+    height: 100%;
+    float: left;
+}
+
+.msg_button {
+    margin: 0;
+    outline: 0;
+    height: 100%;
+    width: 15%;
+}
+
+.msg_wall {
+    clear: right;
+    width: 50%;
+    height: 60%;
+    float: right;
+    background-color: palegreen;
+    overflow-y: scroll;
+
+}
+
+.reload_wall_button {
+    float: right;
+    clear: right;
+    width: 50%;
+    margin: 0;
+    border: 0;
+    height: 3%;
+    background-color: cadetblue;
+    font-weight: bold;
+}
+
+.message_on_wall {
+    position: relative;
+    border-radius: 15px;
+    background-color: ghostwhite;
+    margin: 7px auto 7px auto;
+    width: 80%;
+    height: 10%;
+}
+
+/* Browse page block */
+
+#browse_user {
+    border-bottom: 3px solid red;
+    height: 7%;
+}
+
+#browse_profile {
+    display: none;
+}
+
+#browse_error {
+    color: red;
+    margin-left: 7%;
+    margin-top: 4px;
+}
+
+/* Account page block */
+
+#account_panel {
+    float: left;
+}
+
+#sign_out {
+    margin-top: 50px;
+}
+
+#change_password input {
+    display: block;
+    margin-bottom: 5px;
+    float: top;
+}

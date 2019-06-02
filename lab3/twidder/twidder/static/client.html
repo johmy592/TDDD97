@@ -1,0 +1,183 @@
+<html>
+<head>
+    <!-- Laddar in style filen href="{{ url_for('static', filename='client.css') }}-->
+    <link rel="stylesheet" type="text/css" href="/static/client.css">
+        
+    <!-- Laddar in javscriptfilen -->
+    <script src="/static/client.js" type="text/javascript"></script>
+
+    <!-- Script med welcomeview html kod. -->
+    <script type=”text/template” id="welcomeview">
+        <!-- Section med allt innehåll till förstasidan "Welcome". -->
+        <section id="welcome">
+            <div class="logo">
+                <img src="/static/img/wimage.png">
+            </div>
+            <!-- Lägger till alla "items" till login form från beskrivningen. -->
+            <div class="login">
+                <form id="login_form">
+                    <label>Email</label>
+                    <input type="email" name="login_email" id="login_email" required>
+                    <label>Password</label>
+                    <input type="password" name="login_password" id="login_password" required>
+                    <button type="submit" class="login-button">LogIn</button>
+                    <div id="badLogin">
+                    </div>
+                </form>
+            </div>
+
+            <!-- Lägger till alla "items" till signup form från beskrivningen. -->
+            <div class="signup">
+                <form id="signup_form">
+                    <h2>Sign Up Here</h2>
+                    <label>First Name</label>
+                    <input type="text" name="first_name_field" id="first_name_field" required>
+                    <label>Family Name</label>
+                    <input type="text" name="family_name_field" id="family_name_field" required>
+                    <label>Gender</label>
+                    <select id="gender">
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <label>City</label>
+                    <input type="text" name="city_field" id="city_field" required>
+                    <label>Country</label>
+                    <input type="text" name="country_field" id="country_field" required>
+                    <label>Email</label>
+                    <input type="email" name="email_field" id="email_field" required>
+                    <label>Password</label>
+                    <input type="password" id="password_field" name="password_field" required>
+                    <label>Repeat PSW</label>
+                    <input type="password" id="repeat_password_field" name="repeat_password_field" required>
+                    <button type="submit" class="signup-button">SignUp</button>
+                </form>
+            </div>
+        </section>
+    </script>
+
+    <script type="text/template" id="profileview">
+        <section class="profile">
+            <!-- Skapar alla tabs -->
+            <div class="tabs">
+                <button class="tablinks" id="start_tab_btn">Start</button>
+                <button class="tablinks" id="browse_tab_btn">Browse</button>
+                <button class="tablinks" id="account_tab_btn">Account</button>
+            </div>
+
+            <!-- Allt innehåll till start taben. -->
+            <div id="start_tab" class="tab_content">
+                <h1>Start Panel</h1>
+
+                <!-- Info till sin egna profil. -->
+                <div class="personal_info">
+                    <h4>Personal information:</h4>
+
+                    <label for="info_name">Name:</label>
+                    <div id="info_name" class="info_text"></div>
+                    <label for="info_email">Email:</label>
+                    <div id="info_email" class="info_text"></div>
+                    <label for="info_gender">Gender:</label>
+                    <div id="info_gender" class="info_text"></div>
+                    <label for="info_city">City:</label>
+                    <div id="info_city" class="info_text"></div>
+                    <label for="info_country">Country:</label>
+                    <div id="info_country" class="info_text"></div>
+                </div>
+
+                <!-- Form för att skriva meddelande samt lägga till det på sin vägg. -->
+                <form class="msg_form">
+                    <textarea id="text_box" class="text_box">What's up?.......</textarea>
+                    <button class="msg_button" type="button" id="start_msg_btn">Publish</button>
+                </form>
+
+                <button type="button" class="reload_wall_button" id="start_reload_btn">Reload</button>
+
+                <!-- Div där meddelandena till sin vägg skall visas på. -->
+                <div id="start_msg_wall" class="msg_wall"></div>
+            </div>
+
+            <!-- Allt innehåll till browse taben. -->
+            <div id="browse_tab" class="tab_content">
+                <h1> Browse Panel</h1>
+
+                <h3>Enter E-mail to search for user.</h3>
+                <form id="browse_user">
+                    <label for="browse_email">User Email</label>
+                    <input type="email" id="browse_email">
+                    <button type="submit" id="browse_button">Search</button>
+                    <div id="browse_error"></div>
+                </form>
+
+                <div id="browse_profile">
+
+                    <!-- Info om sin användarens profil. -->
+                    <div class="personal_info">
+                        <h4>Personal information:</h4>
+                        <label for="user_name">Name: </label>
+                        <div id="user_name" class="info_text"></div>
+                        <label for="user_email">Email: </label>
+                        <div id="user_email" class="info_text"></div>
+                        <label for="user_gender">Gender: </label>
+                        <div id="user_gender" class="info_text"></div>
+                        <label for="user_city">City: </label>
+                        <div id="user_city" class="info_text"></div>
+                        <label for="user_country">Country: </label>
+                        <div id="user_country" class="info_text"></div>
+                    </div>
+
+                    <!-- Form för att skriva meddelande samt lägga till det på sin vägg. -->
+                    <form class="msg_form">
+                        <textarea id="browse_text_box" class="text_box">What's up?.......</textarea>
+                        <button id="browse_msg_btn" class="msg_button" type="button">Publish</button>
+                    </form>
+
+                    <button type="button" class="reload_wall_button" id="browse_reload_btn">Reload</button>
+
+                    <!-- Div där meddelandena till sin vägg skall visas på. -->
+                    <div id="browse_msg_wall" class="msg_wall"></div>
+
+                </div>
+
+            </div>
+
+            <!-- Allt innehåll till account taben. -->
+            <div id="account_tab" class="tab_content">
+                <h1>Account</h1>
+
+                <!-- Form för att byta lösenord. -->
+                <form name="change_password" id="change_password">
+                    <h4>Change Password</h4>
+                    <label for="old_password">Old Password</label>
+                    <input type="password" id="old_password" name="old_password" required>
+                    <label for="change_password1">Password</label>
+                    <input type="password" id="change_password1" name="change_password1" required>
+                    <label for="change_password2">Confirm Password</label>
+                    <input type="password" id="change_password2" name="change_password2" required>
+                    <button type="submit" value="commit_change" name="commit_change" id="commit_new_password">Commit
+                        Change
+                    </button>
+                </form>
+
+                <!-- Plats för feedback att skrivas till. -->
+                <div id="pwd_change_feedback"></div>
+
+                <!-- Utloggningsknappen. -->
+                <form id="sign_out">
+                    <p>Click to sign out and get back to login page.</p>
+                    <button type="submit" id="sign_out_btn">Sign Out</button>
+                </form>
+            </div>
+        </section>
+
+    </script>
+</head>
+<body>
+
+<div id="view">
+
+</div>
+
+
+</body>
+</html>
