@@ -1,5 +1,5 @@
 DROP TABLE IF EXISTS users;
-DROP TABLE IF EXISTS loggedInUsers;
+DROP TABLE IF EXISTS signedInUsers;
 DROP TABLE IF EXISTS messages;
 
 CREATE TABLE users(
@@ -13,7 +13,7 @@ CREATE TABLE users(
 	primary key(email)
 );
 
-CREATE TABLE loggedInUsers(
+CREATE TABLE signedInUsers(
 	email text not null,
 	token text not null,
 	PRIMARY KEY(email),

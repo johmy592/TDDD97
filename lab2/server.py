@@ -1,8 +1,9 @@
 from flask import Flask, request
+from database_helper import *
 import os
 import binascii
 import json
-from database_helper import *
+
 
 app = Flask(__name__)
 
@@ -10,14 +11,16 @@ app = Flask(__name__)
 @app.route("/sign_in", methods=["GET", "POST"])
 def sign_in():
     input_data = request.json
-    email = input_data["email"]
     password = input_data["password"]
-    if not user_and_password_match(email, password):
-        response = {"success": False, "message": "Wrong username or password."}
+    email = input_data["email"]
+
+    if email_and_password_match(email, password):
+        token = binascii.b2a_hex(os.urandom(18))
+        sign_in_user(email, token)
+        response = {"success": True, "message": "Successfully signed in.", "data": token}
         return json.dumps(response)
-    token = binascii.b2a_hex(os.urandom(18))
-    sign_in_user(email, token)
-    response = {"success": True, "message": "Successfully signed in.", "data": token}
+
+    response = {"success": False, "message": "Wrong username or password."}
     return json.dumps(response)
 
 
@@ -31,15 +34,18 @@ def sign_up():
     gender = input_data["gender"]
     city = input_data["city"]
     country = input_data["country"]
-    if user_exists(email):
-        response = {"success": False, "message": "User already exists."}
+
+    if find_user(email):
+        response = {"success": False, "message": "Email already in use."}
         return json.dumps(response)
+
     if email and password and firstname and familyname and gender and city and country:
         if len(password) > 7:
-            add_user_to_db(email, password, firstname, familyname, gender, city, country)
+            add_new_user(email, password, firstname, familyname, gender, city, country)
             response = {"success": True, "message": "Successfully signed up."}
             return json.dumps(response)
-    response = {"success": False, "message": "Form data missing or incorrect type."}
+
+    response = {"success": False, "message": "Bad data."}
     return json.dumps(response)
 
 
@@ -47,12 +53,13 @@ def sign_up():
 def sign_out():
     input_data = request.json
     token = input_data["token"]
-    if not user_logged_in(token):
-        response = {"success": False, "message": "You are not signed in."}
+
+    if user_signed_in(token):
+        sign_out_user(token)
+        response = {"success": True, "message": "Successfully signed out."}
         return json.dumps(response)
-    sign_out_user(token)
-    response = {"success": True, "message": "Successfully signed out."}
-    connection.commit()
+
+    response = {"success": False, "message": "User not signed in."}
     return json.dumps(response)
 
 
@@ -62,81 +69,98 @@ def change_password():
     token = input_data["token"]
     old_password = input_data["oldPassword"]
     new_password = input_data["newPassword"]
-    email = token_to_email(token)
+    email = email_from_token(token)
+
     if not email:
-        response = {"success": False, "message": "You are not signed in."}
+        response = {"success": False, "message": "User not signed in."}
         return json.dumps(response)
+
+    if not email_and_password_match(email, old_password):
+        response = {"success": False, "message": "Wrong password."}
+        return json.dumps(response)
+
     if len(new_password) < 8:
-        response = {"success": False, "message": "Password too short."}
+        response = {"success": False, "message": "New password too short."}
         return json.dumps(response)
-    if user_and_password_match(email, old_password):
-        update_password(email, new_password)
-        response = {"success": True, "message": "Password changed."}
-        return json.dumps(response)
-    response = {"success": False, "message": "Wrong password."}
+
+    update_password(email, new_password)
+    response = {"success": True, "message": "Password changed successfully."}
     return json.dumps(response)
 
 
 @app.route("/home/get_user_data_by_token", methods=["GET"])
 def get_user_data_by_token():
-    token = request.args.get("token", None)
-    email = token_to_email(token)
+    input_data = request.json
+    token = input_data["token"]
+    email = email_from_token(token)
+
     if not email:
-        response = {"success": False, "message": "You are not signed in."}
+        response = {"success": False, "message": "User not signed in."}
         return json.dumps(response)
-    user_data_list = get_user_data_from_db(email)
-    if not user_data_list:
-        response = {"success": False, "message": "No such user."}
+
+    user_data = get_user_data_from_db(email)
+    if not user_data:
+        response = {"success": False, "message": "User does not exist."}
         return json.dumps(response)
-    user_data = user_data_list[0]
-    match = {"email": user_data[0], "firstname": user_data[2], "familyname": user_data[3], "gender": user_data[4],
+
+    return_data = {"email": user_data[0], "firstname": user_data[2], "familyname": user_data[3], "gender": user_data[4],
              "city": user_data[5], "country": user_data[6]}
-    response = {"success": True, "message": "User data retrieved.", "data": match}
+    response = {"success": True, "message": "User data retrieved.", "data": return_data}
     return json.dumps(response)
 
 
 @app.route("/browse/get_user_data_by_email", methods=["GET"])
 def get_user_data_by_email():
-    token = request.args.get("token", None)
-    email = request.args.get("email", None)
-    if not user_logged_in(token):
-        response = {"success": False, "message": "You are not signed in."}
+    input_data = request.json
+    token = input_data["token"]
+    email = input_data["email"]
+
+    if not user_signed_in(token):
+        response = {"success": False, "message": "User not signed in."}
         return json.dumps(response)
-    user_data_list = get_user_data_from_db(email)
-    if not user_data_list:
-        response = {"success": False, "message": "No such user."}
+
+    user_data = get_user_data_from_db(email)
+    if not user_data:
+        response = {"success": False, "message": "User does not exist."}
         return json.dumps(response)
-    user_data = user_data_list[0]
-    match = {"email": user_data[0], "firstname": user_data[2], "familyname": user_data[3], "gender": user_data[4],
+
+    return_data = {"email": user_data[0], "firstname": user_data[2], "familyname": user_data[3], "gender": user_data[4],
              "city": user_data[5], "country": user_data[6]}
-    response = {"success": True, "message": "User data retrieved.", "data": match}
+    response = {"success": True, "message": "User data retrieved.", "data": return_data}
     return json.dumps(response)
 
 
 @app.route("/home/get_user_messages_by_token", methods=["GET"])
 def get_user_messages_by_token():
-    token = request.args.get("token", None)
-    email = token_to_email(token)
-    if not user_logged_in(token):
-        response = {"success": False, "message": "You are not signed in."}
+    input_data = request.json
+    token = input_data["token"]
+    email = email_from_token(token)
+
+    if not user_signed_in(token):
+        response = {"success": False, "message": "User not signed in."}
         return json.dumps(response)
+
     data = get_messages_from_db(email)
-    response = {"success": True, "message": "User messages retrieved.", "data": data}
+    response = {"success": True, "message": "User messages retrieved successfully.", "data": data}
     return json.dumps(response)
 
 
 @app.route("/browse/get_user_messages_by_email", methods=["GET"])
 def get_user_messages_by_email():
-    token = request.args.get("token", None)
-    email = request.args.get("email", None)
-    if not user_logged_in(token):
-        response = {"success": False, "message": "You are not signed in."}
+    input_data = request.json
+    token = input_data["token"]
+    email = input_data["email"]
+
+    if not user_signed_in(token):
+        response = {"success": False, "message": "User not signed in."}
         return json.dumps(response)
-    if not user_exists(email):
-        response = {"success": False, "message": "No such user."}
+
+    if not find_user(email):
+        response = {"success": False, "message": "User does not exist."}
         return json.dumps(response)
+
     data = get_messages_from_db(email)
-    response = {"success": True, "message": "User messages retrieved.", "data": data}
+    response = {"success": True, "message": "User messages retrieved successfully.", "data": data}
     return json.dumps(response)
 
 
@@ -144,17 +168,21 @@ def get_user_messages_by_email():
 def post_message():
     input_data = request.json
     token = input_data["token"]
+    recipient = input_data["email"]
     message = input_data["message"]
-    receiver = input_data["email"]
-    sender_email = token_to_email(token)
-    if not sender_email:
-        response = {"success": False, "message": "You are not signed in."}
+
+    sender = email_from_token(token)
+
+    if not sender:
+        response = {"success": False, "message": "User not signed in."}
         return json.dumps(response)
-    if not user_exists(receiver):
-        response = {"success": False, "message": "No such user."}
+
+    if not find_user(recipient):
+        response = {"success": False, "message": "User does not exist."}
         return json.dumps(response)
-    add_message_to_db(receiver, sender_email, message)
-    response = {"success": True, "message": "Message posted"}
+
+    create_post(recipient, sender, message)
+    response = {"success": True, "message": "Message posted successfully."}
     return json.dumps(response)
 
 
