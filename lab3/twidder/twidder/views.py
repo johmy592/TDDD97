@@ -1,5 +1,5 @@
 from flask import Flask, request
-from gevent.wsgi import WSGIServer
+from gevent.pywsgi import WSGIServer
 from geventwebsocket.handler import WebSocketHandler
 from geventwebsocket import WebSocketError
 import os
