@@ -121,8 +121,9 @@ def change_password():
 
 @app.route("/home/get_user_data_by_token", methods=["GET"])
 def get_user_data_by_token():
-    input_data = request.json
-    token = input_data["token"]
+    #input_data = request.json
+    #token = input_data["token"]
+    token = request.args.get("token", None)
     email = email_from_token(token)
 
     if not email:
@@ -163,8 +164,10 @@ def get_user_data_by_email():
 
 @app.route("/home/get_user_messages_by_token", methods=["GET"])
 def get_user_messages_by_token():
-    input_data = request.json
-    token = input_data["token"]
+    #input_data = request.json
+    #token = input_data["token"]
+
+    token = request.args.get("token", None)
     email = email_from_token(token)
 
     if not user_signed_in(token):

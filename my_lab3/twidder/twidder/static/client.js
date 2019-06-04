@@ -112,20 +112,32 @@ showTab = function (evt, tab) {
 /* Retrieves information about user for home page */
 getUserData = function () {
     var token = localStorage.getItem('token');
-    var serverResponse = serverstub.getUserDataByToken(token).data;
-    var email = serverResponse.email;
-    var name = serverResponse.firstname;
-    var family_name = serverResponse.familyname;
-    var gender = serverResponse.gender;
-    var city = serverResponse.city;
-    var country = serverResponse.country;
+    var params = 'token='+ token;
 
-    document.getElementById('email_info').innerText = email;
-    document.getElementById('name_info').innerText = name + " " + family_name;
-    document.getElementById('gender_info').innerText = gender;
-    document.getElementById('city_info').innerText = city;
-    document.getElementById('country_info').innerText = country;
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'http://127.0.0.1:5000/home/get_user_data_by_token'+'?'+params, true);
+    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhr.onreadystatechange = function() {
+      if (this.readyState === 4 && this.status === 200) {
+          var returnObject = JSON.parse(xhr.responseText);
+          if (returnObject.success) {
+              var serverResponse = returnObject.data;
+              var email = serverResponse.email;
+              var name = serverResponse.firstname;
+              var family_name = serverResponse.familyname;
+              var gender = serverResponse.gender;
+              var city = serverResponse.city;
+              var country = serverResponse.country;
 
+              document.getElementById('email_info').innerText = email;
+              document.getElementById('name_info').innerText = name + " " + family_name;
+              document.getElementById('gender_info').innerText = gender;
+              document.getElementById('city_info').innerText = city;
+              document.getElementById('country_info').innerText = country;
+          }
+      }
+    };
+    xhr.send();
 };
 
 
@@ -133,32 +145,58 @@ sendMessage = function (message_input, receiver_email, msg_wall) {
     var token = localStorage.getItem('token');
     var message = document.getElementById(message_input).value;
     var email = document.getElementById(receiver_email).innerText;
-    serverstub.postMessage(token, message, email);
-    updateWall(msg_wall);
+    //serverstub.postMessage(token, message, email);
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'http://127.0.0.1:5000/post_message', true);
+    xhr.setRequestHeader("Content-type", "application/json");
+    xhr.onreadystatechange = function() {
+        if (this.readyState === 4 && this.status === 200) {
+            updateWall(msg_wall);
+        }
+    };
+    var json_input = JSON.stringify({'token': token, 'email': email, 'message': message});
+    xhr.send(json_input);
 };
 
 updateWall = function (msg_wall) {
     var token = localStorage.getItem('token');
     var messages;
-
+    var url, params;
     if (msg_wall === 'message_wall'){
       // Posting to your own wall
-      messages = serverstub.getUserMessagesByToken(token).data;
+        url = 'http://127.0.0.1:5000/home/get_user_messages_by_token';
+        params = "token=" + token;
+        //messages = serverstub.getUserMessagesByToken(token).data;
     }else {
         // Posting to someone elses wall
         var email = document.getElementById('user_email').innerText;
-        messages = serverstub.getUserMessagesByEmail(token, email).data;
+        url = 'http://127.0.0.1:5000/browse/get_user_messages_by_email';
+        params = "token=" + token + '&' + "email=" + email;
+        //messages = serverstub.getUserMessagesByEmail(token, email).data;
     }
 
     document.getElementById(msg_wall).innerHTML = "";
-    var i;
-    for (i = 0; i < messages.length; i++) {
-        var content = messages[i].content;
-        var writer = messages[i].writer;
 
-        document.getElementById(msg_wall).innerHTML += "<textarea readonly class='posted_message'>" + writer +
-            ": " + content + "</textarea>";
-    }
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url+'?'+params, true);
+    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhr.onreadystatechange = function() {
+        if (this.readyState === 4 && this.status === 200) {
+            var returnObject = JSON.parse(xhr.responseText);
+            if (returnObject.success) {
+                var messages = returnObject.data;
+                var i;
+                for (i = 0; i < messages.length; i++) {
+                    var content = messages[i].content;
+                    var writer = messages[i].writer;
+
+                    document.getElementById(msg_wall).innerHTML += "<textarea readonly class='posted_message'>" + writer +
+                        ": " + content + "</textarea>";
+                }
+            }
+        }
+    };
+    xhr.send();
 };
 
 
@@ -169,34 +207,50 @@ browseUser = function (event) {
 
     var token = localStorage.getItem('token');
     var browse_email = document.getElementById('search_email').value;
-    var serverResponse = serverstub.getUserDataByEmail(token, browse_email);
+    //var serverResponse = serverstub.getUserDataByEmail(token, browse_email);
+    var params = 'token=' + token + '&' + 'email=' + browse_email;
+    //Request server
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'http://127.0.0.1:5000/browse/get_user_data_by_email'+'?'+params, true);
+    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhr.onreadystatechange = function() {
+        if (this.readyState === 4 && this.status === 200) {
+            var serverResponse = JSON.parse(xhr.responseText);
+            if (serverResponse.success) {
+                //serverResponse = returnObject.data;
+                var name = serverResponse.data.firstname;
+                var family_name = serverResponse.data.familyname;
+                var email = serverResponse.data.email;
+                var gender = serverResponse.data.gender;
+                var city = serverResponse.data.city;
+                var country = serverResponse.data.country;
+                document.getElementById('user_name').innerText = name + " " + family_name;
+                document.getElementById('user_email').innerText = email;
+                document.getElementById('user_gender').innerText = gender;
+                document.getElementById('user_city').innerText = city;
+                document.getElementById('user_country').innerText = country;
 
-    if (serverResponse.success) {
-        var name = serverResponse.data.firstname;
-        var family_name = serverResponse.data.familyname;
-        var email = serverResponse.data.email;
-        var gender = serverResponse.data.gender;
-        var city = serverResponse.data.city;
-        var country = serverResponse.data.country;
-        document.getElementById('user_name').innerText = name + " " + family_name;
-        document.getElementById('user_email').innerText = email;
-        document.getElementById('user_gender').innerText = gender;
-        document.getElementById('user_city').innerText = city;
-        document.getElementById('user_country').innerText = country;
-
-        // Update message wall, then display the correct user profile
-        updateWall('browse_message_wall');
-        document.getElementById('user_profile').style.display = "block";
-    } else {
-        document.getElementById('user_profile').style.display = "none";
-        document.getElementById('user_not_found').innerText = serverResponse.message;
-    }
+                // Update message wall, then display the correct user profile
+                updateWall('browse_message_wall');
+                document.getElementById('user_profile').style.display = "block";
+            } else {
+                document.getElementById('user_profile').style.display = "none";
+                document.getElementById('user_not_found').innerText = serverResponse.message;
+            }
+        }
+    };
+    xhr.send();
 };
 
 
 logOut = function (event) {
     event.preventDefault();
-    serverstub.signOut(localStorage.getItem("token"));
+    //serverstub.signOut(localStorage.getItem("token"));
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'http://127.0.0.1:5000/account/sign_out', true);
+    xhr.setRequestHeader('Content-type', 'application/json');
+    var json_input = JSON.stringify({"token": localStorage.getItem('token')});
+    xhr.send(json_input);
     localStorage.removeItem("token");
     displayView();
 };
@@ -206,28 +260,51 @@ changePassword = function (event) {
     event.preventDefault();
     var old_password = document.getElementById("old_password").value;
     var new_password = document.getElementById("new_password").value;
-    var serverResponse = serverstub.changePassword(localStorage.getItem("token"), old_password, new_password);
-    document.getElementById("new_pwd_feedback").innerHTML = serverResponse.message;
-    if (serverResponse.success) {
-        document.getElementById('old_password').value = '';
-        document.getElementById('new_password').value = '';
-        document.getElementById('confirm_new_pw').value = '';
-    }
+    var token = localStorage.getItem("token");
+    //var serverResponse = serverstub.changePassword(localStorage.getItem("token"), old_password, new_password);
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'http://127.0.0.1:5000/account/change_password', true);
+    xhr.setRequestHeader("Content-type", "application/json");
+    xhr.onreadystatechange = function() {
+        if (this.readyState === 4 && this.status === 200) {
+            var serverResponse = JSON.parse(xhr.responseText);
+            document.getElementById("new_pwd_feedback").innerHTML = serverResponse.message;
+            if (serverResponse.success) {
+                document.getElementById('old_password').value = '';
+                document.getElementById('new_password').value = '';
+                document.getElementById('confirm_new_pw').value = '';
+            }
+        }
+    };
+    var json_input = JSON.stringify({'token': token, 'oldPassword': old_password, 'newPassword': new_password});
+    xhr.send(json_input);
 };
 
 
 logIn = function (event) {
     event.preventDefault();
-    var login_email = document.getElementById('login_email');
-    var login_password = document.getElementById('login_password');
-    var serverResponse = serverstub.signIn(login_email.value, login_password.value);
-    if (!serverResponse.success) {
-        document.getElementById("login_error").innerHTML = serverResponse.message;
-    } else {
-        document.getElementById("login_error").innerHTML = '';
-        localStorage.setItem('token', serverResponse.data);
-        displayView();
-    }
+    var login_email = document.getElementById('login_email').value;
+    var login_password = document.getElementById('login_password').value;
+    //var serverResponse = serverstub.signIn(login_email.value, login_password.value);
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'http://127.0.0.1:5000/sign_in', true);
+    xhr.setRequestHeader("Content-type", "application/json");
+    xhr.onreadystatechange = function() {
+        if (this.readyState === 4 && this.status === 200) {
+            var serverResponse = JSON.parse(xhr.responseText);
+            if (!serverResponse.success) {
+                document.getElementById("login_error").innerHTML = serverResponse.message;
+            } else {
+                document.getElementById("login_error").innerHTML = '';
+                localStorage.setItem('token', serverResponse.data);
+                connectWebsocket(login_email.toString());
+                displayView();
+            }
+        }
+    };
+    var json_input = JSON.stringify({'email': login_email, 'password': login_password});
+    xhr.send(json_input);
 };
 
 
@@ -275,13 +352,23 @@ registerUser = function (event) {
         city: city.value,
         country: country.value
     };
-    var serverResponse = serverstub.signUp(dataObject);
-    if (!serverResponse.success) {
-        email.setCustomValidity(serverResponse.message);
-    } else {
-        email.setCustomValidity('');
-        var signInResponse = serverstub.signIn(dataObject.email, dataObject.password);
-        localStorage.setItem('token', signInResponse.data);
-        displayView();
-    }
+    //var serverResponse = serverstub.signUp(dataObject);
+    var json_input = JSON.stringify(dataObject);
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'http://127.0.0.1:5000/sign_up', true);
+    xhr.setRequestHeader("Content-type", "application/json");
+    xhr.onreadystatechange = function() {
+      if (this.readyState === 4 && this.status === 200) {
+          var serverResponse = JSON.parse(xhr.responseText);
+          if (!serverResponse.success) {
+              email.setCustomValidity(serverResponse.message);
+          } else {
+              email.setCustomValidity('');
+              //var signInResponse = serverstub.signIn(dataObject.email, dataObject.password);
+              document.getElementById("signup_form").reset();
+              displayView();
+          }
+      }
+  };
+  xhr.send(json_input);
 };
