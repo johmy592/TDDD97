@@ -1,6 +1,6 @@
 var webSocket;
 
-connectWebsocket = function (email) {
+connectWebsocket = function (email, token) {
     webSocket = new WebSocket('ws://'+ document.domain + ':5000/api');
 
     webSocket.onopen = function () {
@@ -9,9 +9,9 @@ connectWebsocket = function (email) {
     webSocket.onmessage = function (ev) {
         console.log(ev.data.toString());
         if (ev.data === 'Force log out.') {
-            if (localStorage.getItem('token') !== null) {
-                sign_out(ev);
-                webSocket.close(1, "Signed out.")
+            if (localStorage.getItem('token') == token) {
+                logOut(ev);
+                webSocket.close(1000, "Signed out.")
             }
         }
     };
@@ -297,8 +297,8 @@ logIn = function (event) {
                 document.getElementById("login_error").innerHTML = serverResponse.message;
             } else {
                 document.getElementById("login_error").innerHTML = '';
+                connectWebsocket(login_email.toString(), serverResponse.data);
                 localStorage.setItem('token', serverResponse.data);
-                connectWebsocket(login_email.toString());
                 displayView();
             }
         }

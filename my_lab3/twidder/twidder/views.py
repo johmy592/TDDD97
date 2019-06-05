@@ -21,14 +21,15 @@ def index():
 
 @app.route('/api')
 def api():
-    print "Entered api"
+    print "In api"
     if request.environ.get('wsgi.websocket'):
         print "WSGI.WEBSOCKET"
         ws = request.environ['wsgi.websocket']
         while True:
             try:
                 user = ws.receive()
-                if user in user_socket_dict:
+                #token = request.args.get("token", None)
+                if user in user_socket_dict: #and user_signed_in(token):
                     user_socket_dict[str(user)].send('Force log out.')
                 user_socket_dict[str(user)] = ws
                 print("Added user: " + str(user))
@@ -80,7 +81,7 @@ def sign_up():
     return json.dumps(response)
 
 
-@app.route("/sign_out", methods=["GET", "POST"])
+@app.route("/account/sign_out", methods=["GET", "POST"])
 def sign_out():
     input_data = request.json
     token = input_data["token"]
@@ -88,6 +89,7 @@ def sign_out():
     if user_signed_in(token):
         sign_out_user(token)
         response = {"success": True, "message": "Successfully signed out."}
+        print "Signed out boi"
         return json.dumps(response)
 
     response = {"success": False, "message": "User not signed in."}
@@ -143,10 +145,11 @@ def get_user_data_by_token():
 
 @app.route("/browse/get_user_data_by_email", methods=["GET"])
 def get_user_data_by_email():
-    input_data = request.json
-    token = input_data["token"]
-    email = input_data["email"]
-
+    #input_data = request.json
+    #token = input_data["token"]
+    #email = input_data["email"]
+    token = request.args.get("token", None)
+    email = request.args.get("email", None)
     if not user_signed_in(token):
         response = {"success": False, "message": "User not signed in."}
         return json.dumps(response)
@@ -181,10 +184,11 @@ def get_user_messages_by_token():
 
 @app.route("/browse/get_user_messages_by_email", methods=["GET"])
 def get_user_messages_by_email():
-    input_data = request.json
-    token = input_data["token"]
-    email = input_data["email"]
-
+    #input_data = request.json
+    #token = input_data["token"]
+    #email = input_data["email"]
+    token = request.args.get("token", None)
+    email = request.args.get("email", None)
     if not user_signed_in(token):
         response = {"success": False, "message": "User not signed in."}
         return json.dumps(response)
