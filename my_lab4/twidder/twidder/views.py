@@ -1,0 +1,276 @@
+from flask import Flask, request
+from database_helper import *
+import os
+import binascii
+import json
+from gevent.pywsgi import WSGIServer
+from geventwebsocket.handler import WebSocketHandler
+from geventwebsocket import WebSocketError
+
+from __init__ import app
+
+
+
+user_socket_dict = {}
+
+# Helper functions ##################################################
+def update_online_users():
+    users_online = count_online_users()[0]
+    print("online users")
+    print(users_online)
+    temp_dict = {"message": "online users", "data": users_online}
+    dead_sockets = []
+    for user in user_socket_dict:
+        web_socket = user_socket_dict[user]
+        try:
+            web_socket.send(json.dumps(temp_dict))
+        except WebSocketError:
+            dead_socket = user
+            dead_sockets.append(dead_socket)
+    # Removes all sockets that counts as dead.
+    for user in dead_sockets:
+        del user_socket_dict[user]
+
+"""
+def update_views(email):
+    if email in user_socket_dict:
+        page_views = get_page_views(email)
+        package = {"message": "update views", "data": page_views}
+        web_socket = user_socket_dict[email]
+        dead_socket = ""
+        # If WebSocketError occurs, socket counts as dead and is removed.
+        try:
+            web_socket.send(json.dumps(package))
+        except WebSocketError:
+            dead_socket = email
+        if dead_socket:
+            del user_socket_dict[dead_socket]
+"""
+# End of helper funcitons ###########################################
+
+
+
+@app.route("/")
+def index():
+    return app.send_static_file('client.html')
+
+
+@app.route('/api')
+def api():
+    print "In api"
+    if request.environ.get('wsgi.websocket'):
+        print "WSGI.WEBSOCKET"
+        ws = request.environ['wsgi.websocket']
+        while True:
+            try:
+                print("before recieve")
+                user_token = ws.receive()
+                user = email_from_token(user_token)
+                print(user)
+                print("after recieve")
+                #token = request.args.get("token", None)
+                if user in user_socket_dict: #and user_signed_in(token):
+                    message_dict = {"message": "Force log out."}
+                    user_socket_dict[str(user)].send(json.dumps(message_dict))
+                    #user_socket_dict[str(user)].send('Force log out.')
+                if user != None:
+                    user_socket_dict[str(user)] = ws
+                    update_online_users()
+                    print("Added user: " + str(user))
+            except WebSocketError:
+                print("U S E R:" + str(user))
+                print "WebSocketError"
+                break
+    return ""
+
+
+
+@app.route("/sign_in", methods=["GET", "POST"])
+def sign_in():
+    input_data = request.json
+    password = input_data["password"]
+    email = input_data["email"]
+
+    if email_and_password_match(email, password):
+        token = binascii.b2a_hex(os.urandom(18))
+        sign_in_user(email, token)
+        response = {"success": True, "message": "Successfully signed in.", "data": token}
+        return json.dumps(response)
+
+    response = {"success": False, "message": "Wrong username or password."}
+    return json.dumps(response)
+
+
+@app.route("/sign_up", methods=["GET", "POST"])
+def sign_up():
+    input_data = request.json
+    email = input_data["email"]
+    password = input_data["password"]
+    firstname = input_data["firstname"]
+    familyname = input_data["familyname"]
+    gender = input_data["gender"]
+    city = input_data["city"]
+    country = input_data["country"]
+
+    if find_user(email):
+        response = {"success": False, "message": "Email already in use."}
+        return json.dumps(response)
+
+    if email and password and firstname and familyname and gender and city and country:
+        if len(password) > 7:
+            add_new_user(email, password, firstname, familyname, gender, city, country)
+            response = {"success": True, "message": "Successfully signed up."}
+            return json.dumps(response)
+
+    response = {"success": False, "message": "Bad data."}
+    return json.dumps(response)
+
+
+@app.route("/account/sign_out", methods=["GET", "POST"])
+def sign_out():
+    input_data = request.json
+    token = input_data["token"]
+
+    if user_signed_in(token):
+        sign_out_user(token)
+        response = {"success": True, "message": "Successfully signed out."}
+        print "Signed out boi"
+        update_online_users();
+        return json.dumps(response)
+
+    response = {"success": False, "message": "User not signed in."}
+    return json.dumps(response)
+
+
+@app.route("/account/change_password", methods=["GET", "POST"])
+def change_password():
+    input_data = request.json
+    token = input_data["token"]
+    old_password = input_data["oldPassword"]
+    new_password = input_data["newPassword"]
+    email = email_from_token(token)
+
+    if not email:
+        response = {"success": False, "message": "User not signed in."}
+        return json.dumps(response)
+
+    if not email_and_password_match(email, old_password):
+        response = {"success": False, "message": "Wrong password."}
+        return json.dumps(response)
+
+    if len(new_password) < 8:
+        response = {"success": False, "message": "New password too short."}
+        return json.dumps(response)
+
+    update_password(email, new_password)
+    response = {"success": True, "message": "Password changed successfully."}
+    return json.dumps(response)
+
+
+@app.route("/home/get_user_data_by_token", methods=["GET"])
+def get_user_data_by_token():
+    #input_data = request.json
+    #token = input_data["token"]
+    token = request.args.get("token", None)
+    email = email_from_token(token)
+
+    if not email:
+        response = {"success": False, "message": "User not signed in."}
+        return json.dumps(response)
+
+    user_data = get_user_data_from_db(email)
+    if not user_data:
+        response = {"success": False, "message": "User does not exist."}
+        return json.dumps(response)
+
+    return_data = {"email": user_data[0], "firstname": user_data[2], "familyname": user_data[3], "gender": user_data[4],
+             "city": user_data[5], "country": user_data[6]}
+    response = {"success": True, "message": "User data retrieved.", "data": return_data}
+    return json.dumps(response)
+
+
+@app.route("/browse/get_user_data_by_email", methods=["GET"])
+def get_user_data_by_email():
+    #input_data = request.json
+    #token = input_data["token"]
+    #email = input_data["email"]
+    token = request.args.get("token", None)
+    email = request.args.get("email", None)
+    if not user_signed_in(token):
+        response = {"success": False, "message": "User not signed in."}
+        return json.dumps(response)
+
+    user_data = get_user_data_from_db(email)
+    if not user_data:
+        response = {"success": False, "message": "User does not exist."}
+        return json.dumps(response)
+
+    return_data = {"email": user_data[0], "firstname": user_data[2], "familyname": user_data[3], "gender": user_data[4],
+             "city": user_data[5], "country": user_data[6]}
+    response = {"success": True, "message": "User data retrieved.", "data": return_data}
+    return json.dumps(response)
+
+
+@app.route("/home/get_user_messages_by_token", methods=["GET"])
+def get_user_messages_by_token():
+    #input_data = request.json
+    #token = input_data["token"]
+
+    token = request.args.get("token", None)
+    email = email_from_token(token)
+
+    if not user_signed_in(token):
+        response = {"success": False, "message": "User not signed in."}
+        return json.dumps(response)
+
+    data = get_messages_from_db(email)
+    response = {"success": True, "message": "User messages retrieved successfully.", "data": data}
+    return json.dumps(response)
+
+
+@app.route("/browse/get_user_messages_by_email", methods=["GET"])
+def get_user_messages_by_email():
+    #input_data = request.json
+    #token = input_data["token"]
+    #email = input_data["email"]
+    token = request.args.get("token", None)
+    email = request.args.get("email", None)
+    if not user_signed_in(token):
+        response = {"success": False, "message": "User not signed in."}
+        return json.dumps(response)
+
+    if not find_user(email):
+        response = {"success": False, "message": "User does not exist."}
+        return json.dumps(response)
+
+    data = get_messages_from_db(email)
+    response = {"success": True, "message": "User messages retrieved successfully.", "data": data}
+    return json.dumps(response)
+
+
+@app.route("/post_message", methods=["GET", "POST"])
+def post_message():
+    input_data = request.json
+    token = input_data["token"]
+    recipient = input_data["email"]
+    message = input_data["message"]
+
+    sender = email_from_token(token)
+
+    if not sender:
+        response = {"success": False, "message": "User not signed in."}
+        return json.dumps(response)
+
+    if not find_user(recipient):
+        response = {"success": False, "message": "User does not exist."}
+        return json.dumps(response)
+
+    create_post(recipient, sender, message)
+    response = {"success": True, "message": "Message posted successfully."}
+    return json.dumps(response)
+
+
+if __name__ == "__main__":
+    app.debug = True
+    http_server = WSGIServer(('127.0.0.1', 5000), app, handler_class=WebSocketHandler)
+    http_server.serve_forever()

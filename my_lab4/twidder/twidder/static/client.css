@@ -1,0 +1,240 @@
+
+
+body {
+    padding: 0;
+    margin: 0;
+    background-color: steelblue;
+}
+
+#welcome {
+    position: relative;
+    width: 600px;
+    height: 400px;
+    margin-top: 100px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#welcome input {
+    width: 150px;
+    height: 20px;
+    float: right;
+}
+
+
+#welcome label {
+    display: inline-block; /* Keep on same row */
+    margin: 0 0 5px 2px;
+    width: 90px;
+    text-align: left;
+
+}
+
+
+.logo {
+    width: 340px;
+    height: 400px;
+    border: black 1px solid;
+
+}
+
+
+.login {
+    position: absolute; /* Make coordinates inside parent */
+    left: 350px;
+    top: 0;
+    width: 250px;
+    height: 90px;
+    background-color: ghostwhite;
+    border: black 1px solid;
+
+}
+
+.login form {
+    margin: 15px 3px 0 0;
+    float: right;
+}
+
+
+.login_button {
+    display: block; /* Get on its own row */
+    padding: 0;
+    width: 50px;
+    float: right;
+}
+
+#login_error {
+    font-size: 12px;
+    margin-top: 2px;
+    margin-left: 50px;
+    color: crimson;
+}
+
+
+.signup {
+    position: absolute;
+    left: 350px;
+    top: 100px;
+    background-color: ghostwhite;
+    width: 250px;
+    height: 300px;
+    border: black 1px solid;
+
+}
+
+
+.signup h2 {
+    text-align: center;
+}
+
+
+#gender {
+    width: 150px;
+    height: 20px;
+    float: right;
+}
+
+
+.signup form {
+    float: right;
+    margin: 0 3px 0 0;
+}
+
+
+.signup_button {
+    display: block;
+    float: right;
+    padding: 0;
+    width: 60px;
+    height: 20px;
+}
+
+
+.profile {
+    position: relative;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+    width: 70%;
+    height: 100%;
+    background-color: ghostwhite;
+}
+
+.tabs {
+    overflow: hidden;
+    background-color: lightgray;
+}
+
+.tab_button {
+    background-color: darkgray;
+    float: left;
+    outline: 0;
+    border: 0;
+    outline: 0;
+    padding: 14px 85px;
+}
+
+.tabs button.active {
+    background-color: gray;
+}
+
+.tab_content {
+    display: none;
+    margin: 0 5px 5px 5px;
+}
+
+
+.personal_info {
+    width: 50%;
+    float: left;
+    font-size: large;
+}
+
+.personal_info label {
+    display: inline-block;
+    float: left;
+    margin-right: 5px;
+    font-weight: bold;
+}
+
+.message_form {
+    width: 50%;
+    height: 5%;
+    float: right;
+    text-align: left;
+    margin: 0;
+}
+
+.message_box {
+    margin: 0;
+    outline: 0;
+    width: 85%;
+    height: 100%;
+    float: left;
+}
+
+.message_button {
+    outline: 0;
+    height: 100%;
+    width: 15%;
+}
+
+.message_wall {
+    width: 50%;
+    height: 60%;
+    float: right;
+    background-color: steelblue;
+    overflow-y: scroll;
+
+}
+
+.reload_wall_button {
+    float: right;
+    clear:right;
+    width: 50%;
+    height: 5%;
+    margin-top: 10px;
+    border: 0;
+    font-weight: bold;
+    background-color: darkgray;
+}
+
+.posted_message {
+    position: relative;
+
+    background-color: ghostwhite;
+    margin: 5px 5px 5px 5px;
+    width: 90%;
+    height: 10%;
+}
+
+
+#browse_user {
+    /*border-bottom: 2px solid black;*/
+    height: 5%;
+}
+
+#user_profile {
+    display: none;
+}
+
+#user_not_found {
+    color: crimson;
+    margin-left: 13%;
+    margin-top: 2px;
+}
+
+
+#sign_out {
+    margin-top: 30px;
+}
+
+#password_change input {
+    display: block;
+    margin-bottom: 5px;
+    float: top;
+}
+
+#new_pwd_feedback {
+  color: crimson;
+}
