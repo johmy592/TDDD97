@@ -8,7 +8,6 @@ connectWebsocket = function (token) {
         webSocket.send(token);
     };
     webSocket.onmessage = function (ev) {
-        console.log(ev.data.toString());
         let packet = JSON.parse(ev.data);
         if (packet["message"] === 'Force log out.') {
             if (localStorage.getItem('token') == token) {
@@ -23,15 +22,12 @@ connectWebsocket = function (token) {
             document.getElementById("num_views").innerText = packet["data"];
         }
         if (packet["message"] === "update posts chart") {
-            //console.log(packet["data"]);
             let posts_dict = packet["data"];
-            //console.log(posts_dict["56"]);
             let labels = [];
             let data = [];
-            //if("56" in posts_dict){console.log("xd")}
+
             var d = new Date();
             let current_min = d.getMinutes();
-            console.log(current_min)
             for (let i = 0; i < current_min+1; i++) {
                 if(i.toString() in posts_dict){
                     data.push(posts_dict[i.toString()]);
@@ -40,8 +36,6 @@ connectWebsocket = function (token) {
                 }
                 labels.push(i);
             }
-            console.log(labels);
-            console.log(data);
             createChart(labels,data);
         }
     };
@@ -178,7 +172,6 @@ sendMessage = function (message_input, receiver_email, msg_wall) {
     var token = localStorage.getItem('token');
     var message = document.getElementById(message_input).value;
     var email = document.getElementById(receiver_email).innerText;
-    //serverstub.postMessage(token, message, email);
     var xhr = new XMLHttpRequest();
     xhr.open('POST', 'http://127.0.0.1:5000/post_message', true);
     xhr.setRequestHeader("Content-type", "application/json");
@@ -199,13 +192,11 @@ updateWall = function (msg_wall) {
       // Posting to your own wall
         url = 'http://127.0.0.1:5000/home/get_user_messages_by_token';
         params = "token=" + token;
-        //messages = serverstub.getUserMessagesByToken(token).data;
     }else {
         // Posting to someone elses wall
         var email = document.getElementById('user_email').innerText;
         url = 'http://127.0.0.1:5000/browse/get_user_messages_by_email';
         params = "token=" + token + '&' + "email=" + email;
-        //messages = serverstub.getUserMessagesByEmail(token, email).data;
     }
 
     document.getElementById(msg_wall).innerHTML = "";
@@ -240,7 +231,6 @@ browseUser = function (event) {
 
     var token = localStorage.getItem('token');
     var browse_email = document.getElementById('search_email').value;
-    //var serverResponse = serverstub.getUserDataByEmail(token, browse_email);
     var params = 'token=' + token + '&' + 'email=' + browse_email;
     //Request server
     var xhr = new XMLHttpRequest();
@@ -250,7 +240,6 @@ browseUser = function (event) {
         if (this.readyState === 4 && this.status === 200) {
             var serverResponse = JSON.parse(xhr.responseText);
             if (serverResponse.success) {
-                //serverResponse = returnObject.data;
                 var name = serverResponse.data.firstname;
                 var family_name = serverResponse.data.familyname;
                 var email = serverResponse.data.email;
@@ -280,7 +269,6 @@ logOut = function (event) {
     if (event !== undefined) {
         event.preventDefault();
     }
-    //serverstub.signOut(localStorage.getItem("token"));
     var xhr = new XMLHttpRequest();
     xhr.open('POST', 'http://127.0.0.1:5000/account/sign_out', true);
     xhr.setRequestHeader('Content-type', 'application/json');
@@ -296,7 +284,6 @@ changePassword = function (event) {
     var old_password = document.getElementById("old_password").value;
     var new_password = document.getElementById("new_password").value;
     var token = localStorage.getItem("token");
-    //var serverResponse = serverstub.changePassword(localStorage.getItem("token"), old_password, new_password);
     var xhr = new XMLHttpRequest();
     xhr.open('POST', 'http://127.0.0.1:5000/account/change_password', true);
     xhr.setRequestHeader("Content-type", "application/json");
@@ -320,7 +307,6 @@ logIn = function (event) {
     event.preventDefault();
     var login_email = document.getElementById('login_email').value;
     var login_password = document.getElementById('login_password').value;
-    //var serverResponse = serverstub.signIn(login_email.value, login_password.value);
 
     var xhr = new XMLHttpRequest();
     xhr.open('POST', 'http://127.0.0.1:5000/sign_in', true);
@@ -387,7 +373,6 @@ registerUser = function (event) {
         city: city.value,
         country: country.value
     };
-    //var serverResponse = serverstub.signUp(dataObject);
     var json_input = JSON.stringify(dataObject);
     var xhr = new XMLHttpRequest();
     xhr.open('POST', 'http://127.0.0.1:5000/sign_up', true);
@@ -399,7 +384,6 @@ registerUser = function (event) {
               email.setCustomValidity(serverResponse.message);
           } else {
               email.setCustomValidity('');
-              //var signInResponse = serverstub.signIn(dataObject.email, dataObject.password);
               document.getElementById("signup_form").reset();
               displayView();
           }
@@ -410,9 +394,8 @@ registerUser = function (event) {
 
 
 createChart = function (labels, data) {
-    let ctx = document.getElementById("message_chart");
-    ctx.style.backgroundColor = "white";
-    let myChart = new Chart(ctx, {
+    let elem = document.getElementById("message_chart");
+    let barChart = new Chart(elem, {
         type: "bar",
         data: {
             labels: labels,

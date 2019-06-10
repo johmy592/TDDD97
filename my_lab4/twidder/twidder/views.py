@@ -11,56 +11,54 @@ from __init__ import app
 
 
 
-user_socket_dict = {}
+socket_dict = {}
 
 # Helper functions ##################################################
-def update_online_users():
+def update_num_online_users():
     users_online = count_online_users()[0]
-    print("online users")
-    print(users_online)
     temp_dict = {"message": "online users", "data": users_online}
-    dead_sockets = []
-    for user in user_socket_dict:
-        web_socket = user_socket_dict[user]
+    unresponsive_sockets = []
+    for user in socket_dict:
+        web_socket = socket_dict[user]
         try:
             web_socket.send(json.dumps(temp_dict))
         except WebSocketError:
-            dead_socket = user
-            dead_sockets.append(dead_socket)
-    # Removes all sockets that counts as dead.
-    for user in dead_sockets:
-        del user_socket_dict[user]
+            unresponsive_socket = user
+            unresponsive_sockets.append(unresponsive_socket)
+    # Removes unresponsive sockets
+    for user in unresponsive_sockets:
+        del socket_dict[user]
 
 
-def update_views(email):
-    if email in user_socket_dict:
+def update_num_views(email):
+    if email in socket_dict:
         num_views = get_num_page_views(email)[0]
         package = {"message": "update views", "data": num_views}
-        web_socket = user_socket_dict[email]
-        dead_socket = ""
-        # If WebSocketError occurs, socket counts as dead and is removed.
+        web_socket = socket_dict[email]
+        unresponsive_socket = ""
         try:
             web_socket.send(json.dumps(package))
         except WebSocketError:
-            dead_socket = email
-        if dead_socket:
-            del user_socket_dict[dead_socket]
+            unresponsive_socket = email
+        if unresponsive_socket:
+            # Remove the socket if its unresponsive
+            del socket_dict[unresponsive_socket]
 
 
 def update_minutewise_posts(email):
-    if email in user_socket_dict:
+    # Doing by the minute for demo purposes, makes more sense to do e.g. daily
+    if email in socket_dict:
         message_times = get_message_times(email)
-        print(message_times)
         package = {"message": "update posts chart", "data": message_times}
-        web_socket = user_socket_dict[email]
-        dead_socket = ""
-        # If WebSocketError occurs, socket counts as dead and is removed.
+        web_socket = socket_dict[email]
+        unresponsive_socket = ""
         try:
             web_socket.send(json.dumps(package))
         except WebSocketError:
-            dead_socket = email
-        if dead_socket:
-            del user_socket_dict[dead_socket]
+            unresponsive_socket = email
+        if unresponsive_socket:
+            # Remove the socket if its unresponsive
+            del socket_dict[unresponsive_socket]
 # End of helper funcitons ###########################################
 
 
@@ -72,30 +70,21 @@ def index():
 
 @app.route('/api')
 def api():
-    print "In api"
     if request.environ.get('wsgi.websocket'):
-        print "WSGI.WEBSOCKET"
-        ws = request.environ['wsgi.websocket']
+        web_socket = request.environ['wsgi.websocket']
         while True:
             try:
-                print("before recieve")
-                user_token = ws.receive()
+                user_token = web_socket.receive()
                 user = email_from_token(user_token)
-                print(user)
-                print("after recieve")
-                #token = request.args.get("token", None)
-                if user in user_socket_dict: #and user_signed_in(token):
+                if user in socket_dict:
                     message_dict = {"message": "Force log out."}
-                    user_socket_dict[str(user)].send(json.dumps(message_dict))
-                    #user_socket_dict[str(user)].send('Force log out.')
+                    socket_dict[str(user)].send(json.dumps(message_dict))
                 if user != None:
-                    user_socket_dict[str(user)] = ws
-                    update_online_users()
-                    update_views(user)
+                    socket_dict[str(user)] = web_socket
+                    update_num_online_users()
+                    update_num_views(user)
                     update_minutewise_posts(user)
-                    print("Added user: " + str(user))
             except WebSocketError:
-                print("U S E R:" + str(user))
                 print "WebSocketError"
                 break
     return ""
@@ -152,7 +141,7 @@ def sign_out():
         sign_out_user(token)
         response = {"success": True, "message": "Successfully signed out."}
         print "Signed out boi"
-        update_online_users();
+        update_num_online_users();
         return json.dumps(response)
 
     response = {"success": False, "message": "User not signed in."}
@@ -186,8 +175,6 @@ def change_password():
 
 @app.route("/home/get_user_data_by_token", methods=["GET"])
 def get_user_data_by_token():
-    #input_data = request.json
-    #token = input_data["token"]
     token = request.args.get("token", None)
     email = email_from_token(token)
 
@@ -208,9 +195,6 @@ def get_user_data_by_token():
 
 @app.route("/browse/get_user_data_by_email", methods=["GET"])
 def get_user_data_by_email():
-    #input_data = request.json
-    #token = input_data["token"]
-    #email = input_data["email"]
     token = request.args.get("token", None)
     email = request.args.get("email", None)
     if not user_signed_in(token):
@@ -227,15 +211,12 @@ def get_user_data_by_email():
     response = {"success": True, "message": "User data retrieved.", "data": return_data}
 
     update_db_views(email)
-    update_views(email)
+    update_num_views(email)
     return json.dumps(response)
 
 
 @app.route("/home/get_user_messages_by_token", methods=["GET"])
 def get_user_messages_by_token():
-    #input_data = request.json
-    #token = input_data["token"]
-
     token = request.args.get("token", None)
     email = email_from_token(token)
 
@@ -250,9 +231,6 @@ def get_user_messages_by_token():
 
 @app.route("/browse/get_user_messages_by_email", methods=["GET"])
 def get_user_messages_by_email():
-    #input_data = request.json
-    #token = input_data["token"]
-    #email = input_data["email"]
     token = request.args.get("token", None)
     email = request.args.get("email", None)
     if not user_signed_in(token):
