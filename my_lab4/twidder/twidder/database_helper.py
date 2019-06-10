@@ -1,4 +1,5 @@
 import sqlite3
+import datetime
 
 connection = sqlite3.connect('database.db')
 c = connection.cursor()
@@ -59,7 +60,8 @@ def get_user_data_from_db(email):
 
 
 def create_post(recipient, sender, message):
-    c.execute('INSERT INTO messages(reciever, sender, message) VALUES (?, ?, ?)', (recipient, sender, message))
+    minute = datetime.datetime.now().minute
+    c.execute('INSERT INTO messages(reciever, sender, message, minute) VALUES (?, ?, ?, ?)', (recipient, sender, message, minute))
     connection.commit()
 
 
@@ -84,3 +86,25 @@ def user_signed_in(token):
 def count_online_users():
     c.execute('SELECT count(*) AS users FROM signedInUsers')
     return c.fetchone()
+
+def get_num_page_views(email):
+    c.execute('SELECT views FROM users WHERE email = ?', (email,))
+    return c.fetchone()
+
+def update_db_views(email):
+    c.execute('UPDATE users SET views = views + 1 WHERE email = ?', (email,))
+    connection.commit()
+
+def get_message_times(email):
+    #seven_days_ago = (datetime.datetime.today() - datetime.timedelta(7)).timetuple().tm_yday
+    #c.execute('SELECT count(*) FROM messages WHERE receiver=? AND day > ? GROUP BY day', (email, seven_days_ago))
+    c.execute('SELECT minute FROM messages WHERE reciever=?', (email,))
+    result = c.fetchall()
+    data = {}
+    for i in range(len(result)):
+        minute = result[i][0]
+        if minute in data:
+            data[minute] += 1
+        else:
+            data[minute] = 1
+    return data

@@ -31,11 +31,11 @@ def update_online_users():
     for user in dead_sockets:
         del user_socket_dict[user]
 
-"""
+
 def update_views(email):
     if email in user_socket_dict:
-        page_views = get_page_views(email)
-        package = {"message": "update views", "data": page_views}
+        num_views = get_num_page_views(email)[0]
+        package = {"message": "update views", "data": num_views}
         web_socket = user_socket_dict[email]
         dead_socket = ""
         # If WebSocketError occurs, socket counts as dead and is removed.
@@ -45,7 +45,22 @@ def update_views(email):
             dead_socket = email
         if dead_socket:
             del user_socket_dict[dead_socket]
-"""
+
+
+def update_minutewise_posts(email):
+    if email in user_socket_dict:
+        message_times = get_message_times(email)
+        print(message_times)
+        package = {"message": "update posts chart", "data": message_times}
+        web_socket = user_socket_dict[email]
+        dead_socket = ""
+        # If WebSocketError occurs, socket counts as dead and is removed.
+        try:
+            web_socket.send(json.dumps(package))
+        except WebSocketError:
+            dead_socket = email
+        if dead_socket:
+            del user_socket_dict[dead_socket]
 # End of helper funcitons ###########################################
 
 
@@ -76,6 +91,8 @@ def api():
                 if user != None:
                     user_socket_dict[str(user)] = ws
                     update_online_users()
+                    update_views(user)
+                    update_minutewise_posts(user)
                     print("Added user: " + str(user))
             except WebSocketError:
                 print("U S E R:" + str(user))
@@ -208,6 +225,9 @@ def get_user_data_by_email():
     return_data = {"email": user_data[0], "firstname": user_data[2], "familyname": user_data[3], "gender": user_data[4],
              "city": user_data[5], "country": user_data[6]}
     response = {"success": True, "message": "User data retrieved.", "data": return_data}
+
+    update_db_views(email)
+    update_views(email)
     return json.dumps(response)
 
 
@@ -266,6 +286,7 @@ def post_message():
         return json.dumps(response)
 
     create_post(recipient, sender, message)
+    update_minutewise_posts(recipient)
     response = {"success": True, "message": "Message posted successfully."}
     return json.dumps(response)
 

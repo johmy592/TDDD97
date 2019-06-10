@@ -1,5 +1,6 @@
 var webSocket;
 
+
 connectWebsocket = function (token) {
     webSocket = new WebSocket('ws://'+ document.domain + ':5000/api');
 
@@ -17,6 +18,31 @@ connectWebsocket = function (token) {
         }
         if (packet["message"] === "online users") {
           document.getElementById("online_users").innerText = packet["data"];
+        }
+        if (packet["message"] === "update views") {
+            document.getElementById("num_views").innerText = packet["data"];
+        }
+        if (packet["message"] === "update posts chart") {
+            //console.log(packet["data"]);
+            let posts_dict = packet["data"];
+            //console.log(posts_dict["56"]);
+            let labels = [];
+            let data = [];
+            //if("56" in posts_dict){console.log("xd")}
+            var d = new Date();
+            let current_min = d.getMinutes();
+            console.log(current_min)
+            for (let i = 0; i < current_min+1; i++) {
+                if(i.toString() in posts_dict){
+                    data.push(posts_dict[i.toString()]);
+                }else{
+                    data.push(0);
+                }
+                labels.push(i);
+            }
+            console.log(labels);
+            console.log(data);
+            createChart(labels,data);
         }
     };
 };
@@ -380,4 +406,23 @@ registerUser = function (event) {
       }
   };
   xhr.send(json_input);
+};
+
+
+createChart = function (labels, data) {
+    let ctx = document.getElementById("message_chart");
+    ctx.style.backgroundColor = "white";
+    let myChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: "Minutewise posts for last hour",
+                    backgroundColor: 'blue',
+                    data: data
+                }
+            ]
+        }
+    });
 };

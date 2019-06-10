@@ -238,3 +238,9 @@ body {
 #new_pwd_feedback {
   color: crimson;
 }
+
+#message_chart{
+  position: relative;
+  width: 100%;
+  float: left;
+};

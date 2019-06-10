@@ -10,6 +10,7 @@ CREATE TABLE users(
 	gender text not null,
 	city text not null,
 	country text not null,
+	views INTEGER NOT NULL DEFAULT 0,
 	primary key(email)
 );
 
@@ -24,6 +25,7 @@ CREATE TABLE messages(
 	reciever text not null,
 	sender text not null,
 	message text,
+	minute integer not null,
 	FOREIGN KEY (reciever) REFERENCES users(email),
 	FOREIGN KEY (sender) REFERENCES users(email)
 );

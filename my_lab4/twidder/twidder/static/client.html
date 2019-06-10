@@ -6,7 +6,8 @@
     <!--<script src="client.js" type="text/javascript"></script>!-->
     <script src="/static/client.js" type="text/javascript"></script>
     <!--<script src="serverstub.js" type="text/javascript"></script>-->
-
+    <!-- ChartJS -->
+    <script src="/static/Chart.min.js" type="text/javascript"></script>
 
     <script type=”text/view” id="welcomeview">
         <section id="welcome">
@@ -86,6 +87,15 @@
                 <form id="sign_out">
                     <button type="submit" id="sign_out_btn">Sign out</button>
                 </form>
+
+
+                <div id="my_chart">
+                    <canvas id="message_chart" >
+
+                    </canvas>
+                </div>
+
+
             </div>
 
             <div id="home_tab" class="tab_content">
@@ -117,6 +127,10 @@
 
                 <label>Users online:</label>
                 <div id="online_users"></div>
+
+                <label>Page views:</label>
+                <div id="num_views"></div>
+
             </div>
 
 
